@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Publicar Rent In Sun</title>
+<style>
+:root{--bg:#0a1113;--s:#131f23;--t:#f3ece2;--m:#a3afac;--sun:#e8b46c;--l:rgba(243,236,226,.12);--ok:#7fcf9a;--co:#e2775b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:820px;margin:0 auto;padding:48px 16px 80px}
+h1{font:400 44px/1.1 Georgia,serif;margin:0 0 10px}h1 em{color:var(--sun)}
+h2{font:400 28px/1.2 Georgia,serif;margin:0 0 12px;display:flex;gap:14px;align-items:baseline}
+h2 span{font:700 13px system-ui;letter-spacing:.15em;color:var(--sun)}
+.lead{color:var(--m);font-size:18px}
+section{border:1px solid var(--l);border-radius:18px;padding:26px;margin-top:20px;background:var(--s)}
+ol,ul{padding-left:22px}li{margin:6px 0}
+code,kbd{background:rgba(243,236,226,.08);border:1px solid var(--l);border-radius:6px;padding:1px 6px;font-size:14px}
+pre{background:#071012;border:1px solid var(--l);border-radius:10px;padding:14px;overflow:auto;font-size:14px}
+.note{border-left:3px solid var(--sun);padding:10px 14px;background:rgba(232,180,108,.07);border-radius:0 10px 10px 0;margin-top:14px}
+.warn{border-left-color:var(--co);background:rgba(226,119,91,.08)}
+.ok{color:var(--ok)}a{color:var(--sun)}
+table{border-collapse:collapse;width:100%;font-size:15px}td,th{border-bottom:1px solid var(--l);padding:8px;text-align:left}
+</style></head><body><main>
+<h1>Publicar <em>Rent In Sun</em></h1>
+<p class="lead">Guía paso a paso para poner la web en rentinsun.com con base de datos real. Tiempo estimado: 30–45 minutos. Coste: 0 € con los planes gratuitos.</p>
+
+<section><h2><span>QUÉ HAY EN ESTA CARPETA</span></h2>
+<table>
+<tr><td><code>index.html</code></td><td>La web completa (4 idiomas + CRM)</td></tr>
+<tr><td><code>config.js</code></td><td><b>El único archivo que tienes que editar</b>: datos de conexión</td></tr>
+<tr><td><code>supabase-setup.sql</code></td><td>Crea la base de datos y las reglas de seguridad</td></tr>
+<tr><td><code>seed.js</code></td><td>Las 32 propiedades actuales, con traducciones (se cargan una vez desde el CRM)</td></tr>
+<tr><td><code>supabase.js</code></td><td>Librería de conexión (no tocar)</td></tr>
+<tr><td><code>404.html</code>, <code>.htaccess</code>, <code>_headers</code>, <code>robots.txt</code></td><td>Redirigen las URL antiguas (rentinsun.com/propiedad/8…) y configuran el servidor</td></tr>
+</table></section>
+
+<section><h2><span>PASO 1</span> Crear la base de datos</h2>
+<ol>
+<li>Entra en <a href="https://supabase.com" target="_blank">supabase.com</a> → <b>Start your project</b> y crea una cuenta.</li>
+<li><b>New project</b>: nombre <code>rentinsun</code>, una contraseña de base de datos (guárdala) y región <b>West EU (Paris)</b> o <b>Central EU (Frankfurt)</b>.</li>
+<li>Cuando termine de crearse, ve a <b>SQL Editor</b> → <b>New query</b>, pega todo el contenido de <code>supabase-setup.sql</code> y pulsa <b>Run</b>. Debe decir <i>Success</i>.</li>
+</ol></section>
+
+<section><h2><span>PASO 2</span> Crear tu usuario de administrador</h2>
+<ol>
+<li>Ve a <b>Authentication → Users → Add user → Create new user</b>. Pon tu email y una contraseña segura, y marca <b>Auto Confirm User</b>.</li>
+<li>Vuelve a <b>SQL Editor</b> y ejecuta esta línea cambiando el email por el tuyo:
+<pre>insert into public.admins (user_id) select id from auth.users where email = 'TU-EMAIL@ejemplo.com' on conflict do nothing;</pre></li>
+<li>Por seguridad, desactiva los registros públicos: <b>Authentication → Sign In / Providers</b> → desactiva <b>Allow new users to sign up</b>.</li>
+</ol>
+<div class="note">Aunque alguien consiguiera crear una cuenta, la base de datos solo deja editar a los usuarios de la tabla de administradores.</div></section>
+
+<section><h2><span>PASO 3</span> Conectar la web</h2>
+<ol>
+<li>En Supabase pulsa <b>Connect</b> (arriba) o ve a <b>Project Settings → API Keys</b>. Copia la <b>Project URL</b> y la clave <b>publishable</b> (o <b>anon public</b>).</li>
+<li>Abre <code>config.js</code> con cualquier editor de texto y pégalas:
+<pre>window.RIS_CONFIG = {
+  supabaseUrl: "https://abcdefghijkl.supabase.co",
+  supabaseAnonKey: "sb_publishable_…",
+  notifyEmail: "info@rentinsun.com"
+};</pre></li>
+</ol>
+<div class="note">Esa clave está pensada para ir en la web: es pública y solo permite lo que dejan las reglas de seguridad. <b>Nunca</b> pegues la clave <i>secret</i> ni la <i>service_role</i>.</div>
+<div class="note"><b>notifyEmail</b> (opcional): recibirás un email con cada solicitud nueva. La primera vez que alguien envíe un formulario llegará un correo de <i>FormSubmit</i> pidiéndote que confirmes ese email; confírmalo una vez y a partir de ahí los avisos llegan solos. Las solicitudes se guardan siempre en el CRM, con o sin este aviso.</div></section>
+
+<section><h2><span>PASO 4</span> Publicar la web</h2>
+<ol>
+<li>Entra en <a href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a> (crea una cuenta gratuita si te lo pide).</li>
+<li><b>Arrastra la carpeta completa</b> a la página. En unos segundos tendrás la web en una dirección tipo <code>nombre.netlify.app</code>.</li>
+<li>En <b>Site configuration → Change site name</b> puedes ponerle <code>rentinsun</code>.</li>
+</ol>
+<div class="note">Para actualizar la web en el futuro (cambios de diseño), entra en el sitio → <b>Deploys</b> y vuelve a arrastrar la carpeta. Las propiedades <b>no</b> necesitan esto: se gestionan desde el CRM.</div></section>
+
+<section><h2><span>PASO 5</span> Cargar el catálogo y copiar las fotos</h2>
+<ol>
+<li>Abre <code>https://TU-SITIO.netlify.app/#/admin</code> e inicia sesión con el usuario del paso 2.</li>
+<li>Pulsa <b>Cargar catálogo actual</b>: se crean las 32 propiedades con sus traducciones.</li>
+<li>Ve a <b>Ajustes → Copiar fotos a mi servidor</b> y espera a que llegue al final (unas 900 fotos, varios minutos). <b>No cierres la pestaña.</b> Si alguna falla, vuelve a pulsar el botón: solo reintenta las que faltan.</li>
+<li>Revisa en <b>Ajustes</b> los datos de contacto y cambia lo que quieras.</li>
+</ol>
+<div class="note warn"><b>Importante:</b> haz este paso <b>antes</b> de dar de baja la web actual de Hostinger. Hoy las fotos están en los servidores de Hostinger; tras copiarlas quedan en tu Supabase y ya no dependes de ellos.</div></section>
+
+<section><h2><span>PASO 6</span> Conectar el dominio rentinsun.com</h2>
+<ol>
+<li>En Netlify: <b>Domain management → Add a domain</b> → escribe <code>rentinsun.com</code> y confirma.</li>
+<li>En el panel donde está registrado el dominio (probablemente Hostinger → <b>Dominios → DNS / Nameservers</b>), cambia o crea estos registros y <b>borra</b> los A/CNAME antiguos de <code>@</code> y <code>www</code>:
+<table><tr><th>Tipo</th><th>Nombre</th><th>Valor</th></tr>
+<tr><td>A</td><td>@</td><td><code>75.2.60.5</code></td></tr>
+<tr><td>CNAME</td><td>www</td><td><code>TU-SITIO.netlify.app</code></td></tr></table></li>
+<li>Espera a que se propague (de minutos a 24–48 h). Netlify activa el certificado HTTPS automáticamente.</li>
+<li>En Supabase → <b>Authentication → URL Configuration</b>, pon <code>https://rentinsun.com</code> como <b>Site URL</b>.</li>
+</ol>
+<div class="note">No toques los registros MX si tienes el correo @rentinsun.com en Hostinger: el email seguirá funcionando igual.</div></section>
+
+<section><h2><span>PASO 7</span> Comprobación final</h2>
+<ul>
+<li class="ok">✓ La web carga en rentinsun.com con candado HTTPS.</li>
+<li class="ok">✓ Cambias un precio en el CRM y aparece al recargar desde el móvil.</li>
+<li class="ok">✓ Envías el formulario de contacto y aparece en <b>CRM → Solicitudes</b>.</li>
+<li class="ok">✓ <code>rentinsun.com/propiedad/8</code> lleva a la ficha correcta.</li>
+<li class="ok">✓ El selector de idioma cambia toda la web.</li>
+</ul></section>
+
+<section><h2><span>BUENO SABER</span></h2>
+<ul>
+<li><b>Planes gratuitos:</b> Supabase Free incluye 500 MB de base de datos y 1 GB de fotos, de sobra para este catálogo. Pausa los proyectos que pasan una semana sin actividad; con visitas diarias no ocurre, y si se pausara se reactiva desde el panel con un clic. El plan Pro (25 $/mes) elimina esa pausa y añade copias de seguridad diarias.</li>
+<li><b>Copias de seguridad:</b> en el CRM → Ajustes → <b>Exportar datos</b>. Hazlo de vez en cuando.</li>
+<li><b>Contraseña:</b> se cambia en CRM → Ajustes → Acceso. Si la olvidas: Supabase → Authentication → Users → tu usuario → <b>Send password recovery</b>.</li>
+<li><b>Modo demostración:</b> si <code>config.js</code> está vacío, la web funciona igualmente, pero los cambios del CRM solo se guardan en ese navegador (usuario <code>admin</code>, contraseña <code>RentInSun2026</code>).</li>
+</ul></section>
+</main></body></html>

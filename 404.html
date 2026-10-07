@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rent In Sun</title>
+<meta name="robots" content="noindex">
+<script>
+(function(){
+  var p=location.pathname.replace(/\/+$/,"")||"/",m,map={
+    "/propiedades":"/propiedades","/propietarios":"/propietarios","/recomendaciones":"/recomendaciones",
+    "/recomendaciones/finca-el-marchante":"/recomendaciones/finca-el-marchante","/contacto":"/contacto",
+    "/acerca-de":"/sobre-nosotros","/blog":"/blog"};
+  var to="/";
+  if((m=p.match(/^\/propiedad\/(\d+)$/)))to="/propiedad/"+m[1];
+  else if(map[p])to=map[p];
+  var q=new URLSearchParams(location.search),loc=q.get("location");
+  if(p==="/propiedades"&&loc)to+="?town="+encodeURIComponent(loc);
+  location.replace("/#"+to);
+})();
+</script></head>
+<body style="background:#0a1113;color:#f3ece2;font-family:system-ui;display:grid;place-items:center;min-height:100vh;margin:0">
+<p>Redirigiendo… <a href="/" style="color:#e8b46c">Rent In Sun</a></p></body></html>
